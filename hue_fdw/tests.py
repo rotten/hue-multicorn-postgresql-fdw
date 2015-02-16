@@ -8,7 +8,8 @@ import json
 import time
 
 hueID = '001788fffe1782e3'
-hueHost = 'http://192.168.30.116'
+#hueHost = 'http://192.168.30.116'
+hueHost = 'http://192.168.200.118'
 hueUser = 'postgreshue'
 
 
@@ -79,6 +80,11 @@ hues = requests.put(lightsURL + '/3/state', '{"on": false}')
 #print hues.status_code
 #print hues.text
 time.sleep(1)
+
+hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"none"}')
+hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"none"}')
+hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"none"}')
+sys.exit(0)
 
 hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"colorloop"}')
 time.sleep(10)
