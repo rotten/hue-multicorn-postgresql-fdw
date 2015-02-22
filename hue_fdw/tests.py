@@ -84,12 +84,12 @@ time.sleep(1)
 hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"none"}')
 hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"none"}')
 hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"none"}')
-sys.exit(0)
+#sys.exit(0)
 
 hues = requests.put(lightsURL + '/1/state', '{"on": true, "sat":255, "bri":255, "effect":"colorloop"}')
-time.sleep(10)
+time.sleep(3)
 hues = requests.put(lightsURL + '/2/state', '{"on": true, "sat":255, "bri":255, "effect":"colorloop"}')
-time.sleep(10)
+time.sleep(3)
 hues = requests.put(lightsURL + '/3/state', '{"on": true, "sat":255, "bri":255, "effect":"colorloop"}')
 print hues.status_code
 print hues.text
