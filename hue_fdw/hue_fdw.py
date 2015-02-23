@@ -56,13 +56,13 @@ class HueLightsFDW(ForeignDataWrapper):
         log_to_postgres('Query Columns:  %s' % columns, DEBUG)
         log_to_postgres('Query Filters:  %s' % quals, DEBUG)
 
-        # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
-        # We'll have to apply the where clause here... I believe.
+        # Question:  Is this really capped at 15 results per GET, or will it return everything?
+        # ie, do we need to loop this until we exhaust all of the lights in the system, or is one GET enough?
         hueResults = requests.getbase(baseURL + "/lights/")
 
-        # Apply the "quals" filters to the rows
         for light in hueResults.keys():
 
+            # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
             goodRow = True
             for qual in quals:
 
