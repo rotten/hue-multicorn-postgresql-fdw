@@ -70,7 +70,7 @@ print rulesURL
 print hues.status_code
 print json.dumps(hues.json(), indent=4)
 
-#sys.exit(0)
+sys.exit(0)
 
 hues = requests.put(lightsURL + '/1/state', '{"on": false}')
 time.sleep(1)

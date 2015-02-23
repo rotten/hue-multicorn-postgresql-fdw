@@ -1,4 +1,4 @@
-## This is the implementation of the Multicorn ForeignDataWrapper class as an interface to the Philips Hue lighting system
+## This is the implementation of the Multicorn ForeignDataWrapper class as an interface to the Philips Hue system
 ## R.Otten - 2015
 
 from collections import OrderedDict
@@ -12,11 +12,11 @@ import requests
 from operatorFunctions import unknownOperatorException, getOperatorFunction
 
 
-## The Foreign Data Wrapper Class:
-class HueFDW(ForeignDataWrapper):
+## The Foreign Data Wrapper Class for Lights:
+class HueLightsFDW(ForeignDataWrapper):
 
     """
-    Philips Hue Foreign Data Wrapper for PostgreSQL
+    Philips Hue Lights Foreign Data Wrapper for PostgreSQL
     """
 
     def __init__(self, options, columns):
@@ -37,6 +37,8 @@ class HueFDW(ForeignDataWrapper):
             self.userName = 'postgreshue'
             log_to_postgres('Using Default Username:  postgreshue.', WARNING)
 
+        self.baseURL = 'http://' + self.bridge + "/api/" + self.userName 
+
         # We don't really use this anywhere.  Including it for now in case it ends up having a use.
         if options.has_key('hueid'):
             self.hueID = options['hueid']
@@ -48,43 +50,58 @@ class HueFDW(ForeignDataWrapper):
 
 
     # SQL SELECT:
+    # We get back all of the lights we can find and roll them up into rows
     def execute(self, quals, columns):
 
         log_to_postgres('Query Columns:  %s' % columns, DEBUG)
         log_to_postgres('Query Filters:  %s' % quals, DEBUG)
 
-        for qual in quals:
+        # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
+        # We'll have to apply the where clause here... I believe.
+        hueResults = requests.getbase(baseURL + "/lights/")
 
-            try:
-                operatorFunction = getOperatorFunction(qual.operator)
-            except unknownOperatorException, e:
-                log_to_postgres(e, ERROR)
+        # Apply the "quals" filters to the rows
+        for light in hueResults.keys():
 
-            myQuery = myQuery.filter(operatorFunction(r.row[qual.field_name], qual.value))
+            goodRow = True
+            for qual in quals:
 
-        hueResults = requests.get(---)
-         
-        # By default, Multicorn seralizes dictionary types into something for hstore column types.
-        # That looks something like this:   "key => value"
-        # What we really want is this:  "{key:value}"
-        # so we serialize it here.  (This is git issue #1 for this repo, and issue #86 in the Multicorn repo.)
+                try:
 
-        for resultRow in hueResults:
+                    operatorFunction = getOperatorFunction(qual.operator)
 
-            # I don't think we can mutate the row in the rethinkResults cursor directly.
-            # It needs to be copied out of the cursor to be reliably mutable.
-            row = OrderedDict()
-            for resultColumn in resultRow.keys():
+                except unknownOperatorException, e:
 
-                if type(resultRow[resultColumn]) is dict:
+                    log_to_postgres(e, ERROR)
 
-                    row[resultColumn] = json.dumps(resultRow[resultColumn])
+                if not operatorFunction(light[qual.field_name], qual.value)):
 
-                else:
+                    # this column  didn't match.  Drop out and then move to the next row
+                    goodRow = False
+                    break
 
-                    row[resultColumn] = resultRow[resultColumn]
+             if not goodRow:
 
-            yield row
+                 # skip this row and try the next one
+                 continue
+
+             
+             # By default, Multicorn seralizes dictionary types into something for hstore column types.
+             # That looks something like this:   "key => value"
+             # What we really want is this:  "{key:value}"
+             # so we serialize it here.  (This is git issue #1 for this repo, and issue #86 in the Multicorn repo.)
+             row = OrderedDict()
+             for resultColumn in light.keys():
+
+                 if type(resultRow[resultColumn]) is dict:
+
+                     row[resultColumn] = json.dumps(resultRow[resultColumn])
+
+                 else:
+
+                     row[resultColumn] = resultRow[resultColumn]
+
+             yield row
  
 
     # SQL INSERT:
@@ -102,6 +119,7 @@ class HueFDW(ForeignDataWrapper):
         return 
 
     # SQL DELETE
+    # There really is nothing
     def delete(self, old_values):
 
         log_to_postgres('Delete Request Ignored - old values:  %s' % old_values, DEBUG)
