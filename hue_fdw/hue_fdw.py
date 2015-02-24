@@ -75,31 +75,61 @@ class HueLightsFDW(ForeignDataWrapper):
         row = OrderedDict()
         for light in hueResults.keys():
 
-            row['light_id']  = light
-            row['swversion'] = hueResults[light]['swversion']
-            row['uniqueid']  = hueResults[light]['uniqueid']
-            row['type']      = hueResults[light]['type']
-            row['modelid']   = hueResults[light]['modelid']
+            if columns.has_key('light_id'):
+                row['light_id']  = light
+
+            if columns.has_key('swversion'):
+                row['swversion'] = hueResults[light]['swversion']
+
+            if columns.has_key('uniqueid'):
+                row['uniqueid']  = hueResults[light]['uniqueid']
+
+            if columns.has_key('type'):
+                row['type']      = hueResults[light]['type']
+
+            if columns.has_key('modelid'):
+                row['modelid']   = hueResults[light]['modelid']
 
             # We are going to flatten out the "state" inner json.
-            row['on']        = hueResults[light]['state']['on']
-            row['hue']       = hueResults[light]['state']['hue']
-            row['colormode'] = hueResults[light]['state']['colormode']
-            row['effect']    = hueResults[light]['state']['effect']
-            row['alert']     = hueResults[light]['state']['alert']
-            row['xy']        = hueResults[light]['state']['xy']
-            row['reachable'] = hueResults[light]['state']['reachable']
-            row['bri']       = hueResults[light]['state']['bri']
-            row['sat']       = hueResults[light]['state']['sat']
-            row['ct']        = hueResults[light]['state']['ct']
 
-            # Pointsymbol isn't used yet.  We'll save it as is.
-            # HSTORE Column Type:
-            if self.kvType = 'hstore':
-                row['pointsymbol'] = hueResults[light]['pointsymbol']
-            # JSON Column Type:
-            else:  
-                row['pointsymbol'] = json.dumps(hueResults[light]['pointsymbol'])
+            if columns.has_key('on'):
+                row['on']        = hueResults[light]['state']['on']
+
+            if columns.has_key('hue'):
+                row['hue']       = hueResults[light]['state']['hue']
+
+            if columns.has_key('colormode'):
+                row['colormode'] = hueResults[light]['state']['colormode']
+
+            if columns.has_key('effect'):
+                row['effect']    = hueResults[light]['state']['effect']
+
+            if columns.has_key('alert'):
+                row['alert']     = hueResults[light]['state']['alert']
+
+            if columns.has_key('xy'):
+                row['xy']        = hueResults[light]['state']['xy']
+
+            if columns.has_key('reachable'):
+                row['reachable'] = hueResults[light]['state']['reachable']
+
+            if columns.has_key('bri'):
+                row['bri']       = hueResults[light]['state']['bri']
+
+            if columns.has_key('set'):
+                row['sat']       = hueResults[light]['state']['sat']
+
+            if columns.has_key('ct'): 
+                row['ct']        = hueResults[light]['state']['ct']
+
+            if columns.has_key('pointsymbol'):
+                # Pointsymbol isn't used by the API yet.  We'll save it as is for now.
+                # HSTORE Column Type:
+                if self.kvType = 'hstore':
+                    row['pointsymbol'] = hueResults[light]['pointsymbol']
+                # JSON Column Type:
+                else:  
+                    row['pointsymbol'] = json.dumps(hueResults[light]['pointsymbol'])
 
             # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
             # So we do it here.
@@ -116,6 +146,8 @@ class HueLightsFDW(ForeignDataWrapper):
 
                     log_to_postgres(e, ERROR)
 
+                # The SQL parser should have caught if the where clause referenced a column we aren't selecting.
+                # If it didn't, we'll just let this next statement throw an exception (rather than trying to handle it).
                 if not operatorFunction(row[qual.field_name], qual.value)):
 
                     # this column  didn't match.  Drop out and then move to the next row
