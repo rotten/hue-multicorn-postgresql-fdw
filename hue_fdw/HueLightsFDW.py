@@ -1,5 +1,18 @@
+################################################################################################################
 ## This is the implementation of the Multicorn ForeignDataWrapper class as an interface to the Philips Hue system
+##
+## We set up these endpoints:
+##   * Lights
+##   * Config
+##   * Scenes
+##   * Sensors
+## as separate classes since they have very different structures and purposes.
+## 
+## Each of these FDW classes is in a different file.
+## This file has the one for the * Lights * in it.
+##
 ## R.Otten - 2015
+################################################################################################################
 
 from collections import OrderedDict
 import json
@@ -12,6 +25,7 @@ import requests
 from operatorFunctions import unknownOperatorException, getOperatorFunction
 
 
+##############################################
 ## The Foreign Data Wrapper Class for Lights:
 class HueLightsFDW(ForeignDataWrapper):
 
@@ -214,4 +228,6 @@ class HueLightsFDW(ForeignDataWrapper):
         log_to_postgres('Delete Request Ignored - old values:  %s' % old_values, DEBUG)
 
         return False
+
+
 
