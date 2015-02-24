@@ -69,9 +69,10 @@ class HueLightsFDW(ForeignDataWrapper):
 
         # Question:  Is this really capped at 15 results per GET, or will it return everything?
         # ie, do we need to loop this until we exhaust all of the lights in the system, or is one GET enough?
-        hueResults = requests.getbase(baseURL + "/lights/")
+        results = requests.getbase(baseURL + "/lights/")
 
-  
+        hueResults = json.loads(results.text)
+         
         row = OrderedDict()
         for light in hueResults.keys():
 
@@ -163,11 +164,39 @@ class HueLightsFDW(ForeignDataWrapper):
 
     ############
     # SQL UPDATE:
-    def update(self, old_values, new_values):
+    def update(self, oldValues, newValues):
 
-        log_to_postgres('Update Request - new values:  %s' % new_values, DEBUG)
+        #log_to_postgres('Update Request - old values:  %s' % oldValues, DEBUG)
+        log_to_postgres('Update Request - new values:  %s' % newValues, DEBUG)
 
-        return 
+        # make sure we have the primary key to know which row to change
+        if not oldValues.has_key('light id'):
+
+             log_to_postgres('Update request requires light_id (The PK).  Missing From:  %s' % oldValues, ERROR)
+         
+        newState = {}
+        for changedColumn in newValues.keys():
+
+            if changeColumn != 'light_id':
+
+                # We are only going to be able to change the "state" columns.
+                if changeColumn not in ['on', 'hue', 'colormode', 'effect', 'alert', 'xy', 'reachable', 'bri', 'sat', 'ct']:
+
+                    log_to_postgres('Requested to change immutable column rejected:  %s' % changeColumn, ERROR)
+    
+                newState[changeColumn] = newValues[changedColumn]
+
+        results = requests.put(self.BaseURL + '/%s/state' % oldValues['light_id'], newState)
+ 
+        hueResults = json.loads(results.text)
+
+        for status in hueResults:
+
+              if not status.has_key('success'):
+
+                    log_to_postgres('Column Update Failed for light_id %s:  %s' % (oldValues['light_id'], status), ERROR)
+            
+        return True
 
     ############
     # SQL INSERT:
