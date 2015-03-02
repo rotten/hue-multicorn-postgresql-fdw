@@ -62,7 +62,7 @@ class HueLightsFDW(ForeignDataWrapper):
 
         # Give the user a choice as to whether they want to serialize Dictionaries into 
         # HSTORE or JSON.  By default Multicorn serializes them to HSTORE.  (Issue #86 in the Multicorn Repo.)
-        if options.has_key('kvType')
+        if options.has_key('kvType'):
             if options['kvType'].lower() in ['hstore', 'json']:
                 self.kvType = options['kvType'].lower()
             else:
@@ -71,6 +71,18 @@ class HueLightsFDW(ForeignDataWrapper):
             self.kvType = 'json'
 
         self.columns = columns
+
+        self.mutable_columns = ['is_on', 
+                                'hue', 
+                                'color_mode', 
+                                'effect', 
+                                'alert', 
+                                'xy', 
+                               'reachable', 
+                               'brightness', 
+                               'saturation', 
+                               'color_temperature']
+
 
 
     ############
@@ -91,56 +103,56 @@ class HueLightsFDW(ForeignDataWrapper):
         for light in hueResults.keys():
 
             if columns.has_key('light_id'):
-                row['light_id']  = light
+                row['light_id'] = int(light)
 
             if columns.has_key('swversion'):
                 row['swversion'] = hueResults[light]['swversion']
 
-            if columns.has_key('uniqueid'):
-                row['uniqueid']  = hueResults[light]['uniqueid']
+            if columns.has_key('unique_id'):
+                row['unique_id'] = hueResults[light]['uniqueid']
 
-            if columns.has_key('type'):
-                row['type']      = hueResults[light]['type']
+            if columns.has_key('light_type'):
+                row['light_type'] = hueResults[light]['type']
 
-            if columns.has_key('modelid'):
-                row['modelid']   = hueResults[light]['modelid']
+            if columns.has_key('model_id'):
+                row['model_id'] = hueResults[light]['modelid']
 
             # We are going to flatten out the "state" inner json.
 
-            if columns.has_key('on'):
-                row['on']        = hueResults[light]['state']['on']
+            if columns.has_key('is_on'):
+                row['is_on'] = hueResults[light]['state']['on']
 
             if columns.has_key('hue'):
-                row['hue']       = hueResults[light]['state']['hue']
+                row['hue'] = hueResults[light]['state']['hue']
 
-            if columns.has_key('colormode'):
-                row['colormode'] = hueResults[light]['state']['colormode']
+            if columns.has_key('color_mode'):
+                row['color_mode'] = hueResults[light]['state']['colormode']
 
             if columns.has_key('effect'):
-                row['effect']    = hueResults[light]['state']['effect']
+                row['effect'] = hueResults[light]['state']['effect']
 
             if columns.has_key('alert'):
-                row['alert']     = hueResults[light]['state']['alert']
+                row['alert'] = hueResults[light]['state']['alert']
 
             if columns.has_key('xy'):
-                row['xy']        = hueResults[light]['state']['xy']
+                row['xy'] = hueResults[light]['state']['xy']
 
             if columns.has_key('reachable'):
                 row['reachable'] = hueResults[light]['state']['reachable']
 
-            if columns.has_key('bri'):
-                row['bri']       = hueResults[light]['state']['bri']
+            if columns.has_key('brightness'):
+                row['brightness'] = hueResults[light]['state']['bri']
 
-            if columns.has_key('set'):
-                row['sat']       = hueResults[light]['state']['sat']
+            if columns.has_key('saturation'):
+                row['saturation'] = hueResults[light]['state']['sat']
 
-            if columns.has_key('ct'): 
-                row['ct']        = hueResults[light]['state']['ct']
+            if columns.has_key('color_temperature'): 
+                row['color_temperature'] = hueResults[light]['state']['ct']
 
             if columns.has_key('pointsymbol'):
                 # Pointsymbol isn't used by the API yet.  We'll save it as is for now.
                 # HSTORE Column Type:
-                if self.kvType = 'hstore':
+                if self.kvType == 'hstore':
                     row['pointsymbol'] = hueResults[light]['pointsymbol']
                 # JSON Column Type:
                 else:  
@@ -163,15 +175,15 @@ class HueLightsFDW(ForeignDataWrapper):
 
                 # The SQL parser should have caught if the where clause referenced a column we aren't selecting.
                 # If it didn't, we'll just let this next statement throw an exception (rather than trying to handle it).
-                if not operatorFunction(row[qual.field_name], qual.value)):
+                if not operatorFunction(row[qual.field_name], qual.value):
 
                     # this column  didn't match.  Drop out and then move to the next row
                     goodRow = False
                     break
 
-             if goodRow:
+            if goodRow:
 
-                 yield row
+                yield row
  
              # otherwise, loop around and try the next row
 
@@ -194,7 +206,7 @@ class HueLightsFDW(ForeignDataWrapper):
             if changeColumn != 'light_id':
 
                 # We are only going to be able to change the "state" columns.
-                if changeColumn not in ['on', 'hue', 'colormode', 'effect', 'alert', 'xy', 'reachable', 'bri', 'sat', 'ct']:
+                if changeColumn not in self.mutable_columns:
 
                     log_to_postgres('Requested to change immutable column rejected:  %s' % changeColumn, ERROR)
     
