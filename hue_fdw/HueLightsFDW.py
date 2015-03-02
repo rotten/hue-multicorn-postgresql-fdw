@@ -102,61 +102,80 @@ class HueLightsFDW(ForeignDataWrapper):
         row = OrderedDict()
         for light in hueResults.keys():
 
-            if 'light_id' in columns:
-                row['light_id'] = int(light)
+            # add the requested columns to the output:
+            for column in columns:
 
-            if 'swversion' in columns:
-                row['swversion'] = hueResults[light]['swversion']
+                if column == 'light_id':
+                    row['light_id'] = int(light)
+                    continue
 
-            if 'unique_id' in columns:
-                row['unique_id'] = hueResults[light]['uniqueid']
+                if column == 'swversion':
+                    row['swversion'] = hueResults[light]['swversion']
+                    continue
 
-            if 'light_type' in columns:
-                row['light_type'] = hueResults[light]['type']
+                if column == 'unique_id':
+                    row['unique_id'] = hueResults[light]['uniqueid']
+                    continue
 
-            if 'model_id' in columns:
-                row['model_id'] = hueResults[light]['modelid']
+                if column == 'light_type':
+                    row['light_type'] = hueResults[light]['type']
+                    continue
 
-            # We are going to flatten out the "state" inner json.
+                if column == 'model_id':
+                    row['model_id'] = hueResults[light]['modelid']
+                    continue
 
-            if 'is_on' in columns:
-                row['is_on'] = hueResults[light]['state']['on']
+                # We are going to flatten out the "state" inner json.
 
-            if 'hue' in columns:
-                row['hue'] = hueResults[light]['state']['hue']
+                if column == 'is_on':
+                    row['is_on'] = hueResults[light]['state']['on']
+                    continue
 
-            if 'color_mode' in columns:
-                row['color_mode'] = hueResults[light]['state']['colormode']
+                if column == 'hue':
+                    row['hue'] = hueResults[light]['state']['hue']
+                    continue
 
-            if 'effect' in columns:
-                row['effect'] = hueResults[light]['state']['effect']
+                if column == 'color_mode':
+                    row['color_mode'] = hueResults[light]['state']['colormode']
+                    continue
 
-            if 'alert' in columns:
-                row['alert'] = hueResults[light]['state']['alert']
+                if column == 'effect':
+                    row['effect'] = hueResults[light]['state']['effect']
+                    continue
 
-            if 'xy' in columns:
-                row['xy'] = hueResults[light]['state']['xy']
+                if column == 'alert':
+                    row['alert'] = hueResults[light]['state']['alert']
+                    continue
 
-            if 'reachable' in columns:
-                row['reachable'] = hueResults[light]['state']['reachable']
+                if column == 'xy':
+                    row['xy'] = hueResults[light]['state']['xy']
+                    continue
 
-            if 'brightness' in columns:
-                row['brightness'] = hueResults[light]['state']['bri']
+                if column == 'reachable':
+                    row['reachable'] = hueResults[light]['state']['reachable']
+                    continue
 
-            if 'saturation' in columns:
-                row['saturation'] = hueResults[light]['state']['sat']
+                if column == 'brightness':
+                    row['brightness'] = hueResults[light]['state']['bri']
+                    continue
 
-            if 'color_temperature' in columns: 
-                row['color_temperature'] = hueResults[light]['state']['ct']
+                if column == 'saturation':
+                    row['saturation'] = hueResults[light]['state']['sat']
+                    continue
 
-            if 'pointsymbol' in columns:
-                # Pointsymbol isn't used by the API yet.  We'll save it as is for now.
-                # HSTORE Column Type:
-                if self.kvType == 'hstore':
-                    row['pointsymbol'] = hueResults[light]['pointsymbol']
-                # JSON Column Type:
-                else:  
-                    row['pointsymbol'] = json.dumps(hueResults[light]['pointsymbol'])
+                if column == 'color_temperature': 
+                    row['color_temperature'] = hueResults[light]['state']['ct']
+                    continue
+
+                if column == 'pointsymbol':
+                    # Pointsymbol isn't used by the API yet.  We'll save it as is for now.
+                    # HSTORE Column Type:
+                    if self.kvType == 'hstore':
+                        row['pointsymbol'] = hueResults[light]['pointsymbol']
+                    # JSON Column Type:
+                    else:  
+                        row['pointsymbol'] = json.dumps(hueResults[light]['pointsymbol'])
+
 
             # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
             # So we do it here.
