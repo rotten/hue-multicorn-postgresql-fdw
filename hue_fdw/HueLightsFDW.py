@@ -70,8 +70,13 @@ class HueLightsFDW(ForeignDataWrapper):
         else:
             self.kvType = 'json'
 
+        # We need to identify the "primary key" column:
+        self.row_id_column = 'light_id'
+
+        # And we'll hang the full set of columns for future reference:
         self.columns = columns
 
+        # These are the only columns we are going to allow to be updated though:
         self.mutable_columns = ['is_on', 
                                 'hue', 
                                 'color_mode', 
@@ -180,7 +185,7 @@ class HueLightsFDW(ForeignDataWrapper):
             # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
             # So we do it here.
             # We can't have more than 63 lights in one system, and we only have 15 columns to worry about.
-            # Note:  Not sure how pointsymbol column filtering would work yet.
+            # Note:  Not sure how pointsymbol column filtering would work yet, nor xy column!
             goodRow = True
             for qual in quals:
 
@@ -209,6 +214,7 @@ class HueLightsFDW(ForeignDataWrapper):
 
     ############
     # SQL UPDATE:
+    ## -- we should implement 'rollback'
     def update(self, oldValues, newValues):
 
         #log_to_postgres('Update Request - old values:  %s' % oldValues, DEBUG)
