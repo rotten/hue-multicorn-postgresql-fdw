@@ -214,7 +214,7 @@ class HueLightsFDW(ForeignDataWrapper):
 
     ############
     # SQL UPDATE:
-    ## -- we should implement 'rollback'
+    ## -- we should implement 'rollback' (and, necessarily, 'commit')
     def update(self, oldValues, newValues):
 
         #log_to_postgres('Update Request - old values:  %s' % oldValues, DEBUG)
