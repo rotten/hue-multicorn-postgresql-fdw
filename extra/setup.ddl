@@ -6,7 +6,7 @@ create server myhuelights foreign data wrapper multicorn options
      username 'postgreshue');
 
 create foreign table mylights (
-   light_id           smallint primary key,
+   light_id           smallint,
    swversion          varchar,
    unique_id          varchar,
    light_type         varchar,
