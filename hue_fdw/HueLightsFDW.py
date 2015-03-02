@@ -35,7 +35,7 @@ class HueLightsFDW(ForeignDataWrapper):
 
     def __init__(self, options, columns):
 
-        super(HueFDW, self).__init__(options, columns)
+        super(HueLightsFDW, self).__init__(options, columns)
 
         log_to_postgres('options:  %s' % options, DEBUG)
         log_to_postgres('columns:  %s' % columns, DEBUG)
@@ -95,61 +95,61 @@ class HueLightsFDW(ForeignDataWrapper):
 
         # Question:  Is this really capped at 15 results per GET, or will it return everything?
         # ie, do we need to loop this until we exhaust all of the lights in the system, or is one GET enough?
-        results = requests.getbase(baseURL + "/lights/")
+        results = requests.get(self.baseURL + "/lights/")
 
         hueResults = json.loads(results.text)
          
         row = OrderedDict()
         for light in hueResults.keys():
 
-            if columns.has_key('light_id'):
+            if 'light_id' in columns:
                 row['light_id'] = int(light)
 
-            if columns.has_key('swversion'):
+            if 'swversion' in columns:
                 row['swversion'] = hueResults[light]['swversion']
 
-            if columns.has_key('unique_id'):
+            if 'unique_id' in columns:
                 row['unique_id'] = hueResults[light]['uniqueid']
 
-            if columns.has_key('light_type'):
+            if 'light_type' in columns:
                 row['light_type'] = hueResults[light]['type']
 
-            if columns.has_key('model_id'):
+            if 'model_id' in columns:
                 row['model_id'] = hueResults[light]['modelid']
 
             # We are going to flatten out the "state" inner json.
 
-            if columns.has_key('is_on'):
+            if 'is_on' in columns:
                 row['is_on'] = hueResults[light]['state']['on']
 
-            if columns.has_key('hue'):
+            if 'hue' in columns:
                 row['hue'] = hueResults[light]['state']['hue']
 
-            if columns.has_key('color_mode'):
+            if 'color_mode' in columns:
                 row['color_mode'] = hueResults[light]['state']['colormode']
 
-            if columns.has_key('effect'):
+            if 'effect' in columns:
                 row['effect'] = hueResults[light]['state']['effect']
 
-            if columns.has_key('alert'):
+            if 'alert' in columns:
                 row['alert'] = hueResults[light]['state']['alert']
 
-            if columns.has_key('xy'):
+            if 'xy' in columns:
                 row['xy'] = hueResults[light]['state']['xy']
 
-            if columns.has_key('reachable'):
+            if 'reachable' in columns:
                 row['reachable'] = hueResults[light]['state']['reachable']
 
-            if columns.has_key('brightness'):
+            if 'brightness' in columns:
                 row['brightness'] = hueResults[light]['state']['bri']
 
-            if columns.has_key('saturation'):
+            if 'saturation' in columns:
                 row['saturation'] = hueResults[light]['state']['sat']
 
-            if columns.has_key('color_temperature'): 
+            if 'color_temperature' in columns: 
                 row['color_temperature'] = hueResults[light]['state']['ct']
 
-            if columns.has_key('pointsymbol'):
+            if 'pointsymbol' in columns:
                 # Pointsymbol isn't used by the API yet.  We'll save it as is for now.
                 # HSTORE Column Type:
                 if self.kvType == 'hstore':
