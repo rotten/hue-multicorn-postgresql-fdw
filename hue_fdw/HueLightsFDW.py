@@ -275,9 +275,9 @@ class HueLightsFDW(ForeignDataWrapper):
 
               if not status.has_key('success'):
 
+                    log_to_postgres('Full Results: %s' % results.text, DEBUG)
                     log_to_postgres('Column Update Failed for light_id %s:  %s' % (lightID, status), ERROR)
             
-        return True
 
     ############
     # SQL INSERT:
@@ -285,7 +285,6 @@ class HueLightsFDW(ForeignDataWrapper):
 
         log_to_postgres('Insert Request Ignored - requested values:  %s' % new_values, WARNING)
 
-        return False
 
     ############
     # SQL DELETE
@@ -293,8 +292,6 @@ class HueLightsFDW(ForeignDataWrapper):
     def delete(self, old_values):
 
         log_to_postgres('Delete Request Ignored - old values:  %s' % old_values, WARNING)
-
-        return False
 
 
 
