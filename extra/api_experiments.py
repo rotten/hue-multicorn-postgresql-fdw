@@ -72,6 +72,12 @@ print json.dumps(hues.json(), indent=4)
 
 #sys.exit(0)
 
+hues = requests.put('http://192.168.200.118/api/postgreshue/lights/1/state', '{"on": true, "hue": 14922, "effect": "colorloop", "alert": "none", "xy": [0.4595, 0.4105], "bri": 254, "ct": 369, "sat": 143}')
+print hues.status_code
+print hues.text
+
+sys.exit(0)
+
 hues = requests.put(lightsURL + '/1/state', '{"on": false}')
 #time.sleep(1)
 hues = requests.put(lightsURL + '/2/state', '{"on": false}')

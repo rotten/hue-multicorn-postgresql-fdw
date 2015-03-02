@@ -51,7 +51,7 @@ class HueLightsFDW(ForeignDataWrapper):
             self.userName = 'postgreshue'
             log_to_postgres('Using Default Username:  postgreshue.', WARNING)
 
-        self.baseURL = 'http://' + self.bridge + "/api/" + self.userName 
+        self.baseURL = 'http://' + self.bridge + "/api/" + self.userName + "/lights/"
 
         # We don't really use this anywhere.  Including it for now in case it ends up having a use.
         if options.has_key('hueid'):
@@ -71,7 +71,7 @@ class HueLightsFDW(ForeignDataWrapper):
             self.kvType = 'json'
 
         # We need to identify the "primary key" column:
-        self.row_id_column = 'light_id'
+        self._row_id_column = 'light_id'
 
         # And we'll hang the full set of columns for future reference:
         self.columns = columns
@@ -79,15 +79,38 @@ class HueLightsFDW(ForeignDataWrapper):
         # These are the only columns we are going to allow to be updated though:
         self.mutable_columns = ['is_on', 
                                 'hue', 
-                                'color_mode', 
                                 'effect', 
                                 'alert', 
                                 'xy', 
-                               'reachable', 
-                               'brightness', 
-                               'saturation', 
-                               'color_temperature']
+                                'brightness', 
+                                'saturation', 
+                                'color_temperature']
 
+        # We renamed some of the columns to more verbose descriptions and to avoid reserved PG keywords.
+        self.columnKeyMap = { 'is_on'             : 'on',
+                              'color_mode'        : 'colormode',
+                              'brightness'        : 'bri',
+                              'saturation'        : 'sat',
+                              'color_temperature' : 'ct',
+                              # 
+                              'software_version'  : 'swversion',
+                              'unique_id'         : 'uniqueid',
+                              'model_id'          : 'modelid',
+                              'light_type'        : 'type',
+                              # These haven't been renamed:
+                              'hue'               : 'hue',
+                              'effect'            : 'effect',
+                              'alert'             : 'alert', 
+                              'xy'                : 'xy',
+                              'reachable'         : 'reachable',
+                              'pointsymbol'       : 'pointsymbol' }
+
+
+    ############
+    # We need to overload this function so Updates will work
+    @property
+    def rowid_column(self):
+        return self._row_id_column
 
 
     ############
@@ -100,7 +123,7 @@ class HueLightsFDW(ForeignDataWrapper):
 
         # Question:  Is this really capped at 15 results per GET, or will it return everything?
         # ie, do we need to loop this until we exhaust all of the lights in the system, or is one GET enough?
-        results = requests.get(self.baseURL + "/lights/")
+        results = requests.get(self.baseURL)
 
         hueResults = json.loads(results.text)
          
@@ -114,8 +137,8 @@ class HueLightsFDW(ForeignDataWrapper):
                     row['light_id'] = int(light)
                     continue
 
-                if column == 'swversion':
-                    row['swversion'] = hueResults[light]['swversion']
+                if column == 'software_version':
+                    row['software_version'] = hueResults[light]['swversion']
                     continue
 
                 if column == 'unique_id':
@@ -137,7 +160,7 @@ class HueLightsFDW(ForeignDataWrapper):
                     continue
 
                 if column == 'hue':
-                    row['hue'] = hueResults[light]['state']['hue']
+                    row['hue'] = int(hueResults[light]['state']['hue'])
                     continue
 
                 if column == 'color_mode':
@@ -161,15 +184,15 @@ class HueLightsFDW(ForeignDataWrapper):
                     continue
 
                 if column == 'brightness':
-                    row['brightness'] = hueResults[light]['state']['bri']
+                    row['brightness'] = int(hueResults[light]['state']['bri'])
                     continue
 
                 if column == 'saturation':
-                    row['saturation'] = hueResults[light]['state']['sat']
+                    row['saturation'] = int(hueResults[light]['state']['sat'])
                     continue
 
                 if column == 'color_temperature': 
-                    row['color_temperature'] = hueResults[light]['state']['ct']
+                    row['color_temperature'] = int(hueResults[light]['state']['ct'])
                     continue
 
                 if column == 'pointsymbol':
@@ -215,37 +238,44 @@ class HueLightsFDW(ForeignDataWrapper):
     ############
     # SQL UPDATE:
     ## -- we should implement 'rollback' (and, necessarily, 'commit')
-    def update(self, oldValues, newValues):
+    def update(self, lightID, newValues):
 
-        #log_to_postgres('Update Request - old values:  %s' % oldValues, DEBUG)
+        log_to_postgres('Update Request - lightID:  %s' % lightID, DEBUG)
         log_to_postgres('Update Request - new values:  %s' % newValues, DEBUG)
 
-        # make sure we have the primary key to know which row to change
-        if not oldValues.has_key('light id'):
-
-             log_to_postgres('Update request requires light_id (The PK).  Missing From:  %s' % oldValues, ERROR)
-         
         newState = {}
         for changedColumn in newValues.keys():
 
-            if changeColumn != 'light_id':
+            # We are only going to be able to change the "state" columns.
+            if changedColumn in self.mutable_columns:
 
-                # We are only going to be able to change the "state" columns.
-                if changeColumn not in self.mutable_columns:
+                # 't' and 'f' are only going to show up on the boolean columns
+                if newValues[changedColumn] == 't':
+                    newState[self.columnKeyMap[changedColumn]] = True
+                elif newValues[changedColumn] == 'f':  
+                    newState[self.columnKeyMap[changedColumn]] = False
+                else:
+                    newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]
 
-                    log_to_postgres('Requested to change immutable column rejected:  %s' % changeColumn, ERROR)
+        log_to_postgres(self.baseURL + '%s/state' % lightID + ' -- ' + json.dumps(newState), DEBUG)
+        results = requests.put(self.baseURL + '%s/state' % lightID, json.dumps(newState))
+        
+        try:
+
+            hueResults = json.loads(results.text)
+
+        except Exception, e:
+
+            log_to_postgres('Unexpected (non-JSON) response from the Hue Bridge: %s' % self.bridge, ERROR)
+            log_to_postgres('%s' % e, ERROR)
+            log_to_postgres('%s' % results, ERROR)
     
-                newState[changeColumn] = newValues[changedColumn]
-
-        results = requests.put(self.BaseURL + '/%s/state' % oldValues['light_id'], newState)
- 
-        hueResults = json.loads(results.text)
 
         for status in hueResults:
 
               if not status.has_key('success'):
 
-                    log_to_postgres('Column Update Failed for light_id %s:  %s' % (oldValues['light_id'], status), ERROR)
+                    log_to_postgres('Column Update Failed for light_id %s:  %s' % (lightID, status), ERROR)
             
         return True
 
@@ -253,7 +283,7 @@ class HueLightsFDW(ForeignDataWrapper):
     # SQL INSERT:
     def insert(self, new_values):
 
-        log_to_postgres('Insert Request Ignored - requested values:  %s' % new_values, DEBUG)
+        log_to_postgres('Insert Request Ignored - requested values:  %s' % new_values, WARNING)
 
         return False
 
@@ -262,7 +292,7 @@ class HueLightsFDW(ForeignDataWrapper):
     # There really is nothing
     def delete(self, old_values):
 
-        log_to_postgres('Delete Request Ignored - old values:  %s' % old_values, DEBUG)
+        log_to_postgres('Delete Request Ignored - old values:  %s' % old_values, WARNING)
 
         return False
 
