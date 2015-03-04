@@ -1,4 +1,4 @@
-color_name,color_hex,red,green,blue,hue_degree,saturation_percent,lightness_percent
+color_name,rgb,red,green,blue,hue_degree,saturation_percent,lightness_percent
 Air Force blue,#5d8aa8,93,138,168,204,30.1,51.2
 Alice blue,#f0f8ff,240,248,255,208,100,97.1
 Alizarin crimson,#e32636,227,38,54,354.9,77.1,52
