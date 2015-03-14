@@ -87,17 +87,42 @@ class HueConfigFDW(ForeignDataWrapper):
 
         # These are the only columns we are going to allow to be updated though:
         self.mutable_columns = ['name', 
-                                'proxyport', 
-                                'proxyaddress', 
+                                'proxy_port', 
+                                'proxy_address', 
                                 'swupdate', 
-                                'linkbutton', 
-                                'ipaddress', 
+                                'link_button', 
+                                'ip_address', 
                                 'netmask', 
                                 'dhcp',
                                 'timezone']
 
-        # We did not rename any of the columns for the config endpoint
-        #self.columnKeyMap = { }
+        # We renamed some of the columnsto avoid reserved PG keywords (specifically "localtime").
+        # While we were at it we went ahead and made some of the column names more verbose.
+        self.columnKeyMap = { 'name'             : 'name',
+                              'software_version' : 'swversion',
+                              'software_update'  : 'swupdate',
+                              'api_version'      : 'apiversion',
+                              --
+                              'link_button'      : 'linkbutton',
+                              'zigbee_channel'   : 'zigbeechannel',
+                              --
+                              'UTC'              : 'UTC',
+                              'timezone'         : 'timezone',
+                              'local_time'       : 'localtime',
+                              --
+                              'portal_state'      : 'portalstate',
+                              'portal_connection' : 'portalconnection',
+                              'portal_services'   : 'portalservices',
+                              --
+                              'dhcp'              : 'dhcp',
+                              'mac'               : 'mac',
+                              'ip_address'        : 'ipaddress',
+                              'netmask'           : 'netmask',
+                              'gateway'           : 'gateway',
+                              'proxy_address'     : 'proxyaddress',
+                              'proxy_port'        : 'proxyport',
+                              --
+                              'whitelist'         : 'whitelist' }
 
 
     ############
@@ -129,16 +154,16 @@ class HueConfigFDW(ForeignDataWrapper):
             if column in ['swupdate', 'portalstate']:
                 # HSTORE Column Type:
                 if self.kvType == 'hstore':
-                    row[column] = hueResults[column]
+                    row[column] = hueResults[columnKeyMap[column]]
                 # JSON Column Type:
                 else:  
-                    row[column] = json.dumps(hueResults[column])
+                    row[column] = json.dumps(hueResults[columnKeyMap[column]])
 
             elif column == 'proxyport':
-                row[column] = int(hueResults[column])
+                row[column] = int(hueResults[columnKeyMap[column]])
 
             else:
-                row[column] = hueResults[column]
+                row[column] = hueResults[columnKeyMap[column]]
 
         # we only ever get one row back.  We are going to ignore quals.
         if len(quals):
@@ -164,11 +189,11 @@ class HueConfigFDW(ForeignDataWrapper):
 
                 # 't' and 'f' are only going to show up on the boolean columns
                 if newValues[changedColumn] == 't':
-                    newState[changedColumn] = True
+                    newState[columnKeyMap[changedColumn]] = True
                 elif newValues[changedColumn] == 'f':  
-                    newState[changedColumn] = False
+                    newState[columnKeyMap[changedColumn]] = False
                 else:
-                    newState[changedColumn] = newValues[changedColumn]
+                    newState[changedColumn] = newValues[columnKeyMap[changedColumn]]
 
         log_to_postgres(self.baseURL + '%s/state' % lightID + ' -- ' + json.dumps(newState), DEBUG)
         results = requests.put(self.baseURL + '%s/state' % lightID, json.dumps(newState))

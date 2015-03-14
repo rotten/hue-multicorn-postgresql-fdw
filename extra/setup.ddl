@@ -45,28 +45,28 @@ create server myhueconfig foreign data wrapper multicorn options
 
 create foreign table myconfig (
     name               varchar,
-    swversion          varchar,
-    swupdate           json,
-    api_version:       varchar,
+    software_version   varchar,
+    software_update    json,
+    api_version        varchar,
     --
-    linkbutton         boolean,
-    zigbeechannel      integer,
+    link_button        boolean,
+    zigbee_channel     integer,
     --
     UTC                timestamp,
-    timezone:          varchar,
-    localtime:         timestamp with timezone,
+    timezone           varchar,
+    local_time         timestamp (6) with timezone,
     --
-    portalstate        json,
-    portalconnection   varchar,
-    portalservices     boolean,
+    portal_state       json,
+    portal_connection  varchar,
+    portal_services    boolean,
     --
     dhcp               boolean,
     mac                macaddr,
-    ipaddress          inet,
+    ip_address         inet,
     netmask            varchar,
     gateway            inet,
-    proxyaddress       varchar,
-    proxyport          integer,
+    proxy_address      varchar,
+    proxy_port         integer,
     --
     whitelist          json
     --
