@@ -35,7 +35,7 @@ from operatorFunctions import unknownOperatorException, getOperatorFunction
 ##  hueid    -- Optional:  The Hue system ID - not used at this time
 ##  kvtype   -- Optional:  json or hstore - Whether nested KV data returns JSON format or HSTORE format. (default:  json)
 ##
-class HueLightsFDW(ForeignDataWrapper):
+class HueConfigFDW(ForeignDataWrapper):
 
     """
     Philips Hue Lights Foreign Data Wrapper for PostgreSQL
