@@ -107,8 +107,8 @@ class HueLightsFDW(ForeignDataWrapper):
                                 'saturation', 
                                 'color_temperature']
 
-        # We renamed some of the columns to more verbose descriptions and to avoid reserved PG keywords.
-        # (specifically "on" and "type")
+        # We renamed some of the columns to avoid reserved PG keywords. (specifically "on" and "type")
+        # While we were at it, we gave some of the columns more verbose names.
         self.columnKeyMap = { 'is_on'             : 'on',
                               'color_mode'        : 'colormode',
                               'brightness'        : 'bri',
