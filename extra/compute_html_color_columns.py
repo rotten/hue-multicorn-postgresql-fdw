@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 ## Read in the html_colors_source_data.csv file.
+## ( which is scraped from -  http://www.colorhexa.com/color-names )
 ## Compute the additional columns we need for the HTML table.
 ## Output data a CSV ready for import into the table.
 
