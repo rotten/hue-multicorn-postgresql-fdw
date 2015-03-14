@@ -35,6 +35,8 @@ from operatorFunctions import unknownOperatorException, getOperatorFunction
 ##  hueid    -- Optional:  The Hue system ID - not used at this time
 ##  kvtype   -- Optional:  json or hstore - Whether nested KV data returns JSON format or HSTORE format. (default:  json)
 ##
+## ** We do not yet support whitelist management with this foreign data wrapper. **
+##
 class HueConfigFDW(ForeignDataWrapper):
 
     """
@@ -93,6 +95,7 @@ class HueConfigFDW(ForeignDataWrapper):
                                 'link_button', 
                                 'ip_address', 
                                 'netmask', 
+                                'gateway',
                                 'dhcp',
                                 'timezone']
 
@@ -194,7 +197,7 @@ class HueConfigFDW(ForeignDataWrapper):
                     newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]
 
         log_to_postgres(self.baseURL + ' -- ' + json.dumps(newState), DEBUG)
-        results = requests.put(self.baseURL % json.dumps(newState))
+        results = requests.put(self.baseURL, json.dumps(newState))
         
         try:
 
