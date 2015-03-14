@@ -54,7 +54,7 @@ create foreign table myconfig (
     --
     UTC                timestamp,
     timezone           varchar,
-    local_time         timestamp (6) with timezone,
+    local_time         timestamp (6) with time zone,
     --
     portal_state       json,
     portal_connection  varchar,

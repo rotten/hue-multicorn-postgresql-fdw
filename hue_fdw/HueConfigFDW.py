@@ -43,7 +43,7 @@ class HueConfigFDW(ForeignDataWrapper):
 
     def __init__(self, options, columns):
 
-        super(HueLightsFDW, self).__init__(options, columns)
+        super(HueConfigFDW, self).__init__(options, columns)
 
         log_to_postgres('Hue Config options:  %s' % options, DEBUG)
         log_to_postgres('Hue Config columns:  %s' % columns, DEBUG)
