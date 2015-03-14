@@ -102,18 +102,18 @@ class HueConfigFDW(ForeignDataWrapper):
                               'software_version' : 'swversion',
                               'software_update'  : 'swupdate',
                               'api_version'      : 'apiversion',
-                              --
+                               # 
                               'link_button'      : 'linkbutton',
                               'zigbee_channel'   : 'zigbeechannel',
-                              --
-                              'UTC'              : 'UTC',
+                              # 
+                              'utc'              : 'UTC',
                               'timezone'         : 'timezone',
                               'local_time'       : 'localtime',
-                              --
+                              # 
                               'portal_state'      : 'portalstate',
                               'portal_connection' : 'portalconnection',
                               'portal_services'   : 'portalservices',
-                              --
+                              # 
                               'dhcp'              : 'dhcp',
                               'mac'               : 'mac',
                               'ip_address'        : 'ipaddress',
@@ -121,7 +121,7 @@ class HueConfigFDW(ForeignDataWrapper):
                               'gateway'           : 'gateway',
                               'proxy_address'     : 'proxyaddress',
                               'proxy_port'        : 'proxyport',
-                              --
+                              # 
                               'whitelist'         : 'whitelist' }
 
 
@@ -140,8 +140,6 @@ class HueConfigFDW(ForeignDataWrapper):
         log_to_postgres('Hue Config Query Columns:  %s' % columns, DEBUG)
         log_to_postgres('Hue Config Query Filters:  %s' % quals, DEBUG)
 
-        # Question:  Is this really capped at 15 results per GET, or will it return everything?
-        # ie, do we need to loop this until we exhaust all of the lights in the system, or is one GET enough?
         results = requests.get(self.baseURL)
 
         hueResults = json.loads(results.text)
@@ -151,19 +149,19 @@ class HueConfigFDW(ForeignDataWrapper):
         # add the requested columns to the output:
         for column in columns:
 
-            if column in ['swupdate', 'portalstate']:
+            if column in ['software_update', 'portal_state', 'whitelist']:
                 # HSTORE Column Type:
                 if self.kvType == 'hstore':
-                    row[column] = hueResults[columnKeyMap[column]]
+                    row[column] = hueResults[self.columnKeyMap[column]]
                 # JSON Column Type:
                 else:  
-                    row[column] = json.dumps(hueResults[columnKeyMap[column]])
+                    row[column] = json.dumps(hueResults[self.columnKeyMap[column]])
 
-            elif column == 'proxyport':
-                row[column] = int(hueResults[columnKeyMap[column]])
+            elif column == 'proxy_port':
+                row[column] = int(hueResults[self.columnKeyMap[column]])
 
             else:
-                row[column] = hueResults[columnKeyMap[column]]
+                row[column] = hueResults[self.columnKeyMap[column]]
 
         # we only ever get one row back.  We are going to ignore quals.
         if len(quals):
@@ -178,7 +176,7 @@ class HueConfigFDW(ForeignDataWrapper):
     ## -- we should consider implementing 'rollback' (and, necessarily, 'commit')
     def update(self, name, newValues):
 
-        log_to_postgres('Hue Config Update Request - name:  %s' % lightID, DEBUG)
+        log_to_postgres('Hue Config Update Request - name:  %s' % name, DEBUG)
         log_to_postgres('Hue Config Update Request - new values:  %s' % newValues, DEBUG)
 
         newState = {}
@@ -189,14 +187,14 @@ class HueConfigFDW(ForeignDataWrapper):
 
                 # 't' and 'f' are only going to show up on the boolean columns
                 if newValues[changedColumn] == 't':
-                    newState[columnKeyMap[changedColumn]] = True
+                    newState[self.columnKeyMap[changedColumn]] = True
                 elif newValues[changedColumn] == 'f':  
-                    newState[columnKeyMap[changedColumn]] = False
+                    newState[self.columnKeyMap[changedColumn]] = False
                 else:
-                    newState[changedColumn] = newValues[columnKeyMap[changedColumn]]
+                    newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]
 
-        log_to_postgres(self.baseURL + '%s/state' % lightID + ' -- ' + json.dumps(newState), DEBUG)
-        results = requests.put(self.baseURL + '%s/state' % lightID, json.dumps(newState))
+        log_to_postgres(self.baseURL + ' -- ' + json.dumps(newState), DEBUG)
+        results = requests.put(self.baseURL % json.dumps(newState))
         
         try:
 
