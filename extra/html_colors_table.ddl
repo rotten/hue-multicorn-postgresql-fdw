@@ -39,7 +39,7 @@ copy html_colors from '/some/path/to/html_colors_data.csv' with CSV HEADER;
 -- You can set your lights to these colors by doing:
 update mylights
   set
-  xy = (select xy from html_colors where color_name = 'green' limit 1)
+  xy = (select xy from html_colors where color_name = 'crimson' limit 1)
 where  
    light_id = 1;
 
@@ -51,6 +51,6 @@ update mylights
   saturation = c.saturation,
   brightness = c.brightness
 from
-   (select hue, saturation, brightness from html_colors where color_name = 'green' limit 1) c   
+   (select hue, saturation, brightness from html_colors where color_name = 'crimson' limit 1) c   
 where  
    light_id = 1;

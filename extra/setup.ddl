@@ -6,7 +6,8 @@ create extension multicorn;
 create server myhuelights foreign data wrapper multicorn options 
     (wrapper 'hue_fdw.HueLightsFDW.HueLightsFDW', 
      bridge '192.168.200.118', 
-     username 'postgreshue')
+     userName 'postgreshue',
+     transitionTime '1')
 ;
 
 create foreign table mylights (
@@ -55,9 +56,9 @@ create foreign table myconfig (
     timezone:          varchar,
     localtime:         timestamp with timezone,
     --
-    portal_state       json,
-    portal_connection  varchar,
-    portal_services     boolean,
+    portalstate        json,
+    portalconnection   varchar,
+    portalservices     boolean,
     --
     dhcp               boolean,
     mac                macaddr,
