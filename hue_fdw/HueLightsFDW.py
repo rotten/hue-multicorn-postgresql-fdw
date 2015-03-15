@@ -231,13 +231,21 @@ class HueLightsFDW(ForeignDataWrapper):
             if changedColumn in self.mutable_columns:
 
                 # 't' and 'f' are only going to show up on the boolean columns
-                if newValues[changedColumn] == 't':
-                    newState[self.columnKeyMap[changedColumn]] = True
-                elif newValues[changedColumn] == 'f':  
-                    newState[self.columnKeyMap[changedColumn]] = False
+                # We'll make sure we are in a boolean column anyhow:
+                if changedColumn in ['is_on']:
+
+                    if newValues[changedColumn] == 't':
+                        newState[self.columnKeyMap[changedColumn]] = True
+
+                    elif newValues[changedColumn] == 'f':  
+                        newState[self.columnKeyMap[changedColumn]] = False
+
+                # If this is any other type of column, try to set it to whatever we got:
                 else:
+
                     newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]
 
+        # set the transition time to our wrapper global value:
         newState['transitiontime'] = self.transitionTime
 
         log_to_postgres(self.baseURL + '%s/state' % lightID + ' -- ' + json.dumps(newState), DEBUG)

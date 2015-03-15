@@ -197,12 +197,19 @@ class HueConfigFDW(ForeignDataWrapper):
             if changedColumn in self.mutable_columns:
 
                 # 't' and 'f' are only going to show up on the boolean columns
-                if newValues[changedColumn] == 't':
-                    newState[self.columnKeyMap[changedColumn]] = True
-                elif newValues[changedColumn] == 'f':  
-                    newState[self.columnKeyMap[changedColumn]] = False
+                # We'll make sure we are in a boolean column anyhow:
+                if changedColumn in ['link_button', 'portal_services', 'dhcp']:
+
+                    if newValues[changedColumn] == 't':
+                        newState[self.columnKeyMap[changedColumn]] = True
+
+                    elif newValues[changedColumn] == 'f':
+                        newState[self.columnKeyMap[changedColumn]] = False
+
+                # If this is any other type of column, try to set it to whatever we got:
                 else:
-                    newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]
+
+                    newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]`
 
         log_to_postgres(self.baseURL + ' -- ' + json.dumps(newState), DEBUG)
 
