@@ -30,6 +30,7 @@ create foreign table mysensors (
 ;
 
 
+-- We convert the json objects to "text" with the ->> operator so we can add them to where clauses:
 create view my_daylight_sensors_view
 as select
 
@@ -38,13 +39,13 @@ as select
    manufacturer,
    model_id,
    software_version,
-   config->'on'            as "is_on",
-   config->'lat'           as  latitude,
-   config->'long'          as  longitude,
-   config->'sunriseoffset' as  sunrise_offset,
-   config->'sunsetoffset'  as  sunset_offset,
-   state->'daylight'       as  daylight,
-   state->'lastupdated'    as  last_update
+   config->>'on'            as "is_on",
+   config->>'lat'           as  latitude,
+   config->>'long'          as  longitude,
+   config->>'sunriseoffset' as  sunrise_offset,
+   config->>'sunsetoffset'  as  sunset_offset,
+   state->>'daylight'       as  daylight,
+   state->>'lastupdated'    as  last_update
 
 from
    mysensors 

@@ -167,16 +167,13 @@ class HueSensorsFDW(ForeignDataWrapper):
             # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
             # So we do it here.
             # There aren't really going to be all that many rows that we'll be throwing away so we should be ok.
-            # This probably doesn't work with the json data types.  Need to ponder a solution...
             goodRow = True
             for qual in quals:
 
                 try:
-
                     operatorFunction = getOperatorFunction(qual.operator)
 
                 except unknownOperatorException, e:
-
                     log_to_postgres(e, ERROR)
 
                 # The SQL parser should have caught if the where clause referenced a column we aren't selecting.

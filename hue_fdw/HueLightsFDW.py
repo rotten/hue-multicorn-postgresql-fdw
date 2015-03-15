@@ -171,7 +171,7 @@ class HueLightsFDW(ForeignDataWrapper):
                     continue
 
                 # We are going to flatten out the "state" inner json.
-                if column in ['is_on', 'hue', 'color_mode', 'effect', 'alert', 'xy', 'reachable', 'brightness', 'saturation', 'color_temperature']
+                if column in ['is_on', 'hue', 'color_mode', 'effect', 'alert', 'xy', 'reachable', 'brightness', 'saturation', 'color_temperature']:
                     row[column] = hueResults[light]['state'][self.columnKeyMap[column]]
                     continue
 
@@ -192,7 +192,6 @@ class HueLightsFDW(ForeignDataWrapper):
             # Unfortunately the Hue API doesn't have much in the way of filtering when you request the data.
             # So we do it here.
             # We can't have more than 63 lights in one system, and we only have 15 columns to worry about.
-            # Note:  Not sure how pointsymbol column filtering would work yet, nor xy column!
             goodRow = True
             for qual in quals:
 
