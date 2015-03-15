@@ -149,8 +149,9 @@ class HueLightsFDW(ForeignDataWrapper):
 
         hueResults = json.loads(results.text)
          
-        row = OrderedDict()
         for light in hueResults.keys():
+
+            row = OrderedDict()
 
             # add the requested columns to the output:
             for column in columns:
