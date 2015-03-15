@@ -122,10 +122,14 @@ class HueSensorsFDW(ForeignDataWrapper):
         results = requests.get(self.baseURL)
 
         try:
+
             hueResults = json.loads(results.text)
+
         except:
-            log_to_postgres('URL -- %s' % self.baseURL, DEBUG)
-            log_to_postgres('Hue Sensors Query Request Results:  %s' % results.text, ERROR)
+
+            log_to_postgres('Unexpected (non-JSON) response from the Hue Bridge: %s' % self.bridge, ERROR)
+            log_to_postgres('%s' % e, ERROR)
+            log_to_postgres('%s' % results, ERROR)
 
 
         for sensor in hueResults.keys():
@@ -184,6 +188,7 @@ class HueSensorsFDW(ForeignDataWrapper):
                     break
 
             if goodRow:
+
                 yield row
 
 

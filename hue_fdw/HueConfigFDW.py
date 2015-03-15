@@ -145,7 +145,15 @@ class HueConfigFDW(ForeignDataWrapper):
 
         results = requests.get(self.baseURL)
 
-        hueResults = json.loads(results.text)
+        try:
+
+            hueResults = json.loads(results.text)
+
+        except:
+
+            log_to_postgres('Unexpected (non-JSON) response from the Hue Bridge: %s' % self.bridge, ERROR)
+            log_to_postgres('%s' % e, ERROR)
+            log_to_postgres('%s' % results, ERROR)
          
         row = OrderedDict()
 
@@ -197,7 +205,17 @@ class HueConfigFDW(ForeignDataWrapper):
                     newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]
 
         log_to_postgres(self.baseURL + ' -- ' + json.dumps(newState), DEBUG)
-        results = requests.put(self.baseURL, json.dumps(newState))
+
+        try:
+
+            results = requests.put(self.baseURL, json.dumps(newState))
+
+        except:
+
+            log_to_postgres('Unexpected (non-JSON) response from the Hue Bridge: %s' % self.bridge, ERROR)
+            log_to_postgres('%s' % e, ERROR)
+            log_to_postgres('%s' % results, ERROR)
+
         
         try:
 

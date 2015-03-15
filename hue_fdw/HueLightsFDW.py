@@ -145,12 +145,22 @@ class HueLightsFDW(ForeignDataWrapper):
 
         # Question:  Is this really capped at 15 results per GET, or will it return everything?
         # ie, do we need to loop this until we exhaust all of the lights in the system, or is one GET enough?
+        # we don't have enough lights to test it
         results = requests.get(self.baseURL)
 
-        hueResults = json.loads(results.text)
+        try:
+
+            hueResults = json.loads(results.text)
+
+        except:
+
+            log_to_postgres('Unexpected (non-JSON) response from the Hue Bridge: %s' % self.bridge, ERROR)
+            log_to_postgres('%s' % e, ERROR)
+            log_to_postgres('%s' % results, ERROR)
          
         for light in hueResults.keys():
 
+            # We are using an ordered dict so we preserve the column ordering.
             row = OrderedDict()
 
             # add the requested columns to the output:
@@ -160,75 +170,26 @@ class HueLightsFDW(ForeignDataWrapper):
                     row['light_id'] = int(light)
                     continue
 
-                if column == 'software_version':
-                    row['software_version'] = hueResults[light]['swversion']
-                    continue
-
-                if column == 'unique_id':
-                    row['unique_id'] = hueResults[light]['uniqueid']
-                    continue
-
-                if column == 'light_type':
-                    row['light_type'] = hueResults[light]['type']
-                    continue
-
-                if column == 'model_id':
-                    row['model_id'] = hueResults[light]['modelid']
-                    continue
-
                 # We are going to flatten out the "state" inner json.
-
-                if column == 'is_on':
-                    row['is_on'] = hueResults[light]['state']['on']
+                if column in ['is_on', 'hue', 'color_mode', 'effect', 'alert', 'xy', 'reachable', 'brightness', 'saturation', 'color_temperature']
+                    row[column] = hueResults[light]['state'][self.columnKeyMap[column]]
                     continue
 
-                if column == 'hue':
-                    row['hue'] = int(hueResults[light]['state']['hue'])
-                    continue
-
-                if column == 'color_mode':
-                    row['color_mode'] = hueResults[light]['state']['colormode']
-                    continue
-
-                if column == 'effect':
-                    row['effect'] = hueResults[light]['state']['effect']
-                    continue
-
-                if column == 'alert':
-                    row['alert'] = hueResults[light]['state']['alert']
-                    continue
-
-                if column == 'xy':
-                    row['xy'] = hueResults[light]['state']['xy']
-                    continue
-
-                if column == 'reachable':
-                    row['reachable'] = hueResults[light]['state']['reachable']
-                    continue
-
-                if column == 'brightness':
-                    row['brightness'] = int(hueResults[light]['state']['bri'])
-                    continue
-
-                if column == 'saturation':
-                    row['saturation'] = int(hueResults[light]['state']['sat'])
-                    continue
-
-                if column == 'color_temperature': 
-                    row['color_temperature'] = int(hueResults[light]['state']['ct'])
-                    continue
-
+                # Pointsymbol isn't used by the API yet.  We'll save it as is for now.
                 if column == 'pointsymbol':
-                    # Pointsymbol isn't used by the API yet.  We'll save it as is for now.
                     # HSTORE Column Type:
                     if self.kvType == 'hstore':
                         row['pointsymbol'] = hueResults[light]['pointsymbol']
                     # JSON Column Type:
                     else:  
                         row['pointsymbol'] = json.dumps(hueResults[light]['pointsymbol'])
+                    continue
+
+                # else:
+                row[column] = hueResults[light][self.columnKeyMap[column]]
 
 
-            # Unfortunately the Hue API doesn't have much in the way of filtering when you get the data.
+            # Unfortunately the Hue API doesn't have much in the way of filtering when you request the data.
             # So we do it here.
             # We can't have more than 63 lights in one system, and we only have 15 columns to worry about.
             # Note:  Not sure how pointsymbol column filtering would work yet, nor xy column!
@@ -236,11 +197,9 @@ class HueLightsFDW(ForeignDataWrapper):
             for qual in quals:
 
                 try:
-
                     operatorFunction = getOperatorFunction(qual.operator)
 
                 except unknownOperatorException, e:
-
                     log_to_postgres(e, ERROR)
 
                 # The SQL parser should have caught if the where clause referenced a column we aren't selecting.
@@ -283,6 +242,7 @@ class HueLightsFDW(ForeignDataWrapper):
         newState['transitiontime'] = self.transitionTime
 
         log_to_postgres(self.baseURL + '%s/state' % lightID + ' -- ' + json.dumps(newState), DEBUG)
+
         results = requests.put(self.baseURL + '%s/state' % lightID, json.dumps(newState))
         
         try:
