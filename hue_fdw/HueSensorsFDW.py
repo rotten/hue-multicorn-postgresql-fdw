@@ -4,10 +4,11 @@
 ## We set up these endpoints:
 ##   * Lights
 ##   * Sensors
-##   * Scenes
 ##   * Sensors
 ## as separate classes since they have very different structures and purposes.
 ## 
+## Scenes and Groups are not yet implemented.
+##
 ## Each of these FDW classes is in a different file.
 ## This file has the one for the * Sensors * endpoint in it.
 ##

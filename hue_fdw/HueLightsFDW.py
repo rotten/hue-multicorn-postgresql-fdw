@@ -4,9 +4,10 @@
 ## We set up these endpoints:
 ##   * Lights
 ##   * Config
-##   * Scenes
 ##   * Sensors
 ## as separate classes since they have very different structures and purposes.
+##
+## Scenes and Groups are not yet implemented.
 ## 
 ## Each of these FDW classes is in a different file.
 ## This file has the one for the * Lights * endpoint in it.
@@ -275,7 +276,7 @@ class HueLightsFDW(ForeignDataWrapper):
     # SQL INSERT:
     def insert(self, new_values):
 
-        log_to_postgres('Hue Lights Insert Request Ignored - requested values:  %s' % new_values, WARNING)
+        log_to_postgres('Hue Lights Insert Request Ignored - not yet supported by API - requested values:  %s' % new_values, WARNING)
 
 
     ############
@@ -283,7 +284,7 @@ class HueLightsFDW(ForeignDataWrapper):
     # There really is nothing
     def delete(self, old_values):
 
-        log_to_postgres('Hue Lights Delete Request Ignored - old values:  %s' % old_values, WARNING)
+        log_to_postgres('Hue Lights Delete Request Ignored -  - not yet supported by API - old values:  %s' % old_values, WARNING)
 
 
 
