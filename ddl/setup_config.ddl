@@ -5,7 +5,7 @@ create extension multicorn;
 
 create server myhueconfig foreign data wrapper multicorn options
     (wrapper 'hue_fdw.HueConfigFDW.HueConfigFDW',
-     bridge '192.168.200.118',
+     bridge '192.168.0.101',
      username 'postgreshue')
 ;
 
