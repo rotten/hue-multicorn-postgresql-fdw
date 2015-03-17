@@ -7,7 +7,7 @@
 ##   * Sensors
 ## as separate classes since they have very different structures and purposes.
 ##
-## Scenes and Groups are not yet implemented.
+## Rules, Scenes, and Groups are not yet implemented.
 ## 
 ## Each of these FDW classes is in a different file.
 ## This file has the one for the * Lights * endpoint in it.
