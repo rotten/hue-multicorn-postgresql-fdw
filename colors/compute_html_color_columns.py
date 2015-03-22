@@ -29,7 +29,7 @@ outputFieldNames = [
 
 
 sourceFileName = 'html_colors_source_data.csv'
-outputFileName = 'html_colors_data_Brian.csv'
+outputFileName = 'html_colors_data.csv'
 
 sourceFile = open(sourceFileName)
 csvReader = csv.DictReader(sourceFile)
@@ -64,22 +64,28 @@ for row in csvReader:
 
     rgbColor = sRGBColor(float(row['red']), float(row['green']), float(row['blue']), is_upscaled=True)
 
+    #xyzColor = convert_color(rgbColor, XYZColor)
+
+    #X = xyzColor.xyz_x
+    #Y = xyzColor.xyz_y
+    #Z = xyzColor.xyz_z
+
     ### Gamma correction, still work in progress
     gammaRed=float(sRGBColor.get_value_tuple(rgbColor)[0])
     gammaGreen=float(sRGBColor.get_value_tuple(rgbColor)[1])
     gammaBlue=float(sRGBColor.get_value_tuple(rgbColor)[2])
 
-    print gammaRed
-    print gammaGreen
-    print gammaBlue
+    #print gammaRed
+    #print gammaGreen
+    #print gammaBlue
 
     gammaRedCorrected = ((gammaRed + 0.055)/1.055)**2.4 if ((gammaRed) > 0.04045) else (gammaRed / 12.92)
     gammaGreenCorrected = ((gammaGreen + 0.055)/1.055)**2.4 if ((gammaGreen) > 0.04045) else (gammaGreen / 12.92)
     gammaBlueCorrected = ((gammaBlue + 0.055)/1.055)**2.4 if ((gammaBlue) > 0.04045) else (gammaBlue / 12.92)
 
-    print gammaRedCorrected
-    print gammaGreenCorrected
-    print gammaBlueCorrected
+    #print gammaRedCorrected
+    #print gammaGreenCorrected
+    #print gammaBlueCorrected
 
     rgbColorCorrected = sRGBColor(gammaRedCorrected, gammaGreenCorrected, gammaBlueCorrected)
     xyzColorCorrected = convert_color(rgbColorCorrected, XYZColor)
@@ -87,12 +93,6 @@ for row in csvReader:
     X = xyzColorCorrected.xyz_x
     Y = xyzColorCorrected.xyz_y
     Z = xyzColorCorrected.xyz_z
-
-#    xyzColor = convert_color(rgbColor, XYZColor)
-
-#    X = xyzColor.xyz_x
-#    Y = xyzColor.xyz_y
-#    Z = xyzColor.xyz_z
 
     if X + Y + Z:
 
@@ -109,7 +109,7 @@ for row in csvReader:
     # Gamma Correction values found here:
     # https://github.com/PhilipsHue/PhilipsHueSDK-iOS-OSX/blob/master/ApplicationDesignNotes/RGB%20to%20xy%20Color%20conversion.md
 
-    # Gamma Correction for Hue bulbs 
+    # Additional Gamma Correction for Hue bulbs 
     # simple linear conversion: 
     gRed   = ((0.674 - 0.322) / 255) * float(row['red']) + 0.322
     gGreen = ((0.408 - 0.517) / 255) * float(row['green']) + 0.408
@@ -134,7 +134,7 @@ for row in csvReader:
 
     row['hue_xy'] = "{%f,%f}" % (x, y)
 
-    # Gamma Correction for Living Color, Aura, and Iris bulbs:
+    # Additional Gamma Correction for Living Color, Aura, and Iris bulbs:
     gRed   = ((0.703 - 0.296) / 255) * float(row['red']) + 0.296
     gGreen = ((0.709 - 0.214) / 255) * float(row['green']) + 0.214
     gBlue  = ((0.139 - 0.081) / 255) * float(row['blue']) + 0.081
