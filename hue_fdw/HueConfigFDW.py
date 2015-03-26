@@ -210,7 +210,7 @@ class HueConfigFDW(ForeignDataWrapper):
                 # If this is any other type of column, try to set it to whatever we got:
                 else:
 
-                    newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]`
+                    newState[self.columnKeyMap[changedColumn]] = newValues[changedColumn]
 
         log_to_postgres(self.baseURL + ' -- ' + json.dumps(newState), DEBUG)
 
