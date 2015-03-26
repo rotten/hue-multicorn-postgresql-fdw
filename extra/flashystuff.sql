@@ -2,14 +2,14 @@ update mylights
   set 
   is_on = true,
   brightness = 255,
-  xy = (select xy from html_colors where color_name = 'floral white')
+  xy = (select xy from html_colors where color_name = 'rich carmine')
 ;
 
 select pg_sleep(3);
 
 update mylights
   set
-  xy = (select xy from html_colors where color_name = 'shamrock green')
+  xy = (select xy from html_colors where color_name = 'screamin green')
 where
    light_id = 1;
 

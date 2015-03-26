@@ -40,13 +40,12 @@ csvWriter.writeheader()
 
 for row in csvReader:
 
-    # wrap the color_name in tics and double tic any ticks in the string
-    row['color_name'] = "'%s'" % row['color_name'].replace("'", "''")
-
-    # wrap the Hex value in tics:
-    row['rgb'] = "'%s'" % row['rgb']
+    # double tic any tics in the color name
+    row['color_name'] = "%s" % row['color_name'].replace("'", "''").lower()
 
     ## the other columns from the sourceFile will be kept as is.
+
+    row['rgb'] = "%s" % row['rgb']
 
     ### Computed values:
 
