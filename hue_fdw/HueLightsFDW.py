@@ -129,14 +129,6 @@ class HueLightsFDW(ForeignDataWrapper):
                               'pointsymbol'       : 'pointsymbol' }
 
 
-    ############
-    # We need to overload this function so Updates will work
-    @property
-    def rowid_column(self):
-        return self._row_id_column
-
-
-    ############
     # SQL SELECT:
     # We get back all of the lights we can find and roll them up into rows
     def execute(self, quals, columns):
@@ -217,6 +209,15 @@ class HueLightsFDW(ForeignDataWrapper):
              # otherwise, loop around and try the next row
 
 
+
+    ############
+    # We need to overload this function so Updates will work
+    @property
+    def rowid_column(self):
+        return self._row_id_column
+
+
+    ############
     ############
     # SQL UPDATE:
     ## -- we should consider implementing 'rollback' (and, necessarily, 'commit')
