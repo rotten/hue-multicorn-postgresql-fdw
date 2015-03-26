@@ -8,7 +8,7 @@ We've implemented 3 of the Philips Hue Endpoints to date:
 
 If you come up with an implementation for Scenes and Groups endpoints - send a pull request!
 
-After setting up your Hue system as per the Getting Started page, you add the multicorn extension to your database server, and then run the DDL in the setup_ddl folder to access your Philips Hue from your database.
+After setting up your Hue system as per the Getting Started page, you add the multicorn extension to your database server, and then run the DDL in the ddl folder to access your Philips Hue from your database.
 
 A detailed readme is coming here soon - I promise!
 
