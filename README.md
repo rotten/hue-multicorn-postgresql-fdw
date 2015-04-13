@@ -18,14 +18,19 @@ This Foreign Data Wrapper was initially released as a companion to rotten's PG C
   * `pgxn install multicorn`
 3.  You'll need to download this repo:
   * `git clone https://github.com/rotten/hue-multicorn-postgresql-fdw.git`
-4.  And install its code into your database server as well:
+4.  You may also need to install the python *requests* library:
+  * `pip install requests`
+5.  And install its code into your database server as well:
   1. `cd hue-multicorn-postgresql-fdw`
   2. `python ./setup.py install`
-5.  Then, in your database create the multicorn extension:
+6.  Then, in your database create the multicorn extension:
   * `create extension multicorn;`
-6.  You will need to create a **server** and a **foreign table**.  The command syntax to do so are in the *ddl* folder of this repo.
+7.  You will need to create a **server** and a **foreign table**.  The command syntax to do so are in the *ddl* folder of this repo.
   * Unlike normal Foreign Tables, this code was developed very specifically for the table layout in the DDL file.  If you'd prefer other column names you can construct a view over the table.  There is an example of such a view in the *setup_sensors.ddl* file.
-7.  If you'd like to try using color names instead of xy values, check out the *html_colors_table.ddl* file in the *colors* folder for an example of setting up and using a color reference table.
+8.  If you'd like to try using color names instead of xy values, check out the *html_colors_table.ddl* file in the *colors* folder for an example of setting up and using a color reference table.  If you want to experiment with the *compute_html_color_columns.py* routine, you may need to install the python *colormath* library:
+  * `pip install colormath`
+  * Note that Browns and Greens are pretty disappointing with these bulbs.  You can see the color limitations on the Core concepts page - http://www.developers.meethue.com/documentation/core-concepts .  
+
 
 That's it!  You should be able to use your lights as if they were data.  
 
