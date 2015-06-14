@@ -6,7 +6,7 @@ We've implemented 3 of the Philips Hue Endpoints to date:
 *  Sensors
 *  Config
 
-This Foreign Data Wrapper was initially released as a companion to rotten's PG CONF US 2015 talk:  "**Implementing the Database Of Things with Foreign Data Wrappers**".  The slides and specific examples from this talk can be found in the */extras* folder in this repo.
+This Foreign Data Wrapper was initially released as a companion to rotten's PG CONF US 2015 talk:  "**Implementing the Database Of Things with Foreign Data Wrappers**".  The slides and specific examples from this talk can be found in the */extras* folder in this repo.  The video from that talk is available online here:  https://www.youtube.com/watch?v=MhfunWx7bgI&index=37&list=PLCExcFCoaxiOqqT_wN48hV4O_B5dspmsM 
 
 ###### How To Use This Software:
 
